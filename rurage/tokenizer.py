@@ -4,13 +4,14 @@ import warnings
 from typing import List, Literal, Tuple
 
 import nltk
+import pymorphy2
 from nltk import ngrams
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 from nltk.tokenize import word_tokenize
-import pymorphy2
 
 warnings.filterwarnings("ignore")
+
 
 class Tokenizer:
     def __init__(

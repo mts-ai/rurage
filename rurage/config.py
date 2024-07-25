@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import List
+
 import pandas as pd
+
 
 @dataclass(frozen=True)
 class RAGEModelConfig:

@@ -513,10 +513,10 @@ class RAGEvaluator:
             List[RAGEReport]: A list of the reports for each model.
         """
         print("Starting correctness evaluation")
-        # init NLI
+        # init NLI model
         self._init_nli_model(model_name=nli_model_name)
 
-        # init Similarity
+        # init Similarity model
         self._init_sim_model(model_name=sim_model_name)
         # encode golden answer
         self.golden_set_cfg.golden_set[
@@ -983,7 +983,8 @@ class RAGEvaluator:
         )
 
         return correctness_report, faithfulness_report, relevance_report
-    
+
+
 if __name__ == "__main__":
     evaluator = RAGEvaluator()
 
