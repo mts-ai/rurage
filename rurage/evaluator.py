@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, Tuple
+from typing import Dict, List, Literal, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -181,22 +181,18 @@ class RAGEvaluator:
     ) -> float:
         return compute_similarity(row[reference_column_name], row[column_name])
 
-    def _similarity_scores(
+    def _similarity_score(
         self, model_cfg: RAGEModelConfig, reference_column_name: str, column_name: str
     ) -> float:
-        self.golden_set_cfg.golden_set[f"{model_cfg.answer_col}_embs"] = (
-            self._encode_sentences(
-                self.golden_set_cfg.golden_set[model_cfg.answer_col].values
+        self.golden_set_cfg.golden_set[f"{model_cfg.answer_col}_sim"] = (
+            self.golden_set_cfg.golden_set.apply(
+                lambda row: self._predict_similarity(
+                    row,
+                    reference_column_name=reference_column_name,
+                    column_name=column_name,
+                ),
+                axis=1,
             )
-        )
-
-        self.golden_set_cfg.golden_set.apply(
-            lambda row: self._predict_similarity(
-                row,
-                reference_column_name=reference_column_name,
-                column_name=column_name,
-            ),
-            axis=1,
         )
 
         return self.golden_set_cfg.golden_set[f"{model_cfg.answer_col}_sim"].median()
@@ -323,7 +319,7 @@ class RAGEvaluator:
         sim_model_name: str = "intfloat/multilingual-e5-large",
         print_report: bool = False,
         pointwise_report: bool = False,
-    ) -> List[RAGEReport]:
+    ) -> Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]:
         """Evaluate models on the correctness task (A~A*).
         It estimates NLI, similarity, uni-/bi-gram overlap (P/R/F1), ROUGE-L (P/R/F1) and BLEU scores.
 
@@ -333,10 +329,13 @@ class RAGEvaluator:
             sim_model_name (str, optional): HF model name to use for the Similarity score.
             Defaults to "intfloat/multilingual-e5-large".
             print_report (bool, optional): Whether to print the output to the console.
-            Defaults to True.
+            Defaults to False.
+            pointwise_report (bool, optional): Whether to return pointwise report.
+            Defaults to False.
 
         Returns:
-            List[RAGEReport]: A list of the reports for each model.
+            Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]: A list of the reports for the
+            each model. Optionally, a list of the pointwise reports.
         """
         print("Starting correctness evaluation")
         # init NLI
@@ -351,6 +350,7 @@ class RAGEvaluator:
             self.golden_set_cfg.golden_set[self.golden_set_cfg.golden_answer_col].values
         )
 
+        total_report = []
         for model_cfg in tqdm(self.golden_set_cfg.models_cfg, desc="Model #"):
             # NLI
             entailment_score, neutral_score, contradiction_score = self._nli_scores(
@@ -359,7 +359,12 @@ class RAGEvaluator:
                 hypothesis_column_name=model_cfg.answer_col,
             )
             # Similarity
-            similarity_score = self._predict_similarity(
+            self.golden_set_cfg.golden_set[f"{model_cfg.answer_col}_embs"] = (
+                self._encode_sentences(
+                    self.golden_set_cfg.golden_set[model_cfg.answer_col].values
+                )
+            )
+            similarity_score = self._similarity_score(
                 model_cfg,
                 reference_column_name=f"{self.golden_set_cfg.golden_answer_col}_embs",
                 column_name=f"{model_cfg.answer_col}_embs",
@@ -395,8 +400,6 @@ class RAGEvaluator:
                 column_name=model_cfg.answer_col,
             )
 
-        total_report = []
-        for model_cfg in self.golden_set_cfg.models_cfg:
             report = RAGEReport(
                 report_name=model_cfg.answer_col,
                 entailment_score=entailment_score,
@@ -453,7 +456,7 @@ class RAGEvaluator:
         nli_model_name: str = "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7",
         print_report: bool = False,
         pointwise_report: bool = False,
-    ) -> List[RAGEReport]:
+    ) -> Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]:
         """Evaluate models on the faithfulness task (A~C).
         It estimates NLI, unigram overlap (P/R/F1) and ROUGE-L (reversed P) scores.
 
@@ -461,14 +464,18 @@ class RAGEvaluator:
             nli_model_name (str, optional): HF model name to use for the NLI score.
             Defaults to "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7".
             print_report (bool, optional):  Whether to print the output to the console.
-            Defaults to True.
+            Defaults to False.
+            pointwise_report (bool, optional): Whether to return pointwise report.
 
         Returns:
-            List[RAGEReport]: A list of the reports for each model.
+            Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]: A list of the reports for the
+            each model. Optionally, a list of the pointwise reports.
         """
         print("Starting faithfulness evaluation")
         # init NLI
         self._init_nli_model(model_name=nli_model_name)
+
+        total_report = []
         for model_cfg in tqdm(self.golden_set_cfg.models_cfg, desc="Model #"):
             # NLI
             entailment_score, neutral_score, contradiction_score = self._nli_scores(
@@ -490,8 +497,6 @@ class RAGEvaluator:
                 column_name=model_cfg.answer_col,
             )
 
-        total_report = []
-        for model_cfg in self.golden_set_cfg.models_cfg:
             report = RAGEReport(
                 report_name=model_cfg.answer_col,
                 entailment_score=entailment_score,
@@ -530,7 +535,7 @@ class RAGEvaluator:
         sim_model_name: str = "intfloat/multilingual-e5-large",
         print_report: bool = False,
         pointwise_report: bool = False,
-    ) -> List[RAGEReport]:
+    ) -> Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]:
         """Evaluate models on the relevance task (A~Q).
         It estimates similarity, unigram overlap (P) and ROUGE-L (R) scores.
 
@@ -538,10 +543,12 @@ class RAGEvaluator:
             sim_model_name (str, optional): HF model name to use for the Similarity score.
             Defaults to "intfloat/multilingual-e5-large".
             print_report (bool, optional):  Whether to print the output to the console.
-            Defaults to True.
+            Defaults to False.
+            pointwise_report (bool, optional): Whether to return pointwise report.
 
         Returns:
-            List[RAGEReport]: A list of the reports each model.
+            Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]: A list of the reports for the
+            each model. Optionally, a list of the pointwise reports.
         """
         print("Starting relevance evaluation")
         # Similarity
@@ -551,8 +558,15 @@ class RAGEvaluator:
                 self.golden_set_cfg.golden_set[self.golden_set_cfg.question_col].values
             )
         )
+
+        total_report = []
         for model_cfg in tqdm(self.golden_set_cfg.models_cfg, desc="Model #"):
-            similarity_score = self._predict_similarity(
+            self.golden_set_cfg.golden_set[f"{model_cfg.answer_col}_embs"] = (
+                self._encode_sentences(
+                    self.golden_set_cfg.golden_set[model_cfg.answer_col].values
+                )
+            )
+            similarity_score = self._similarity_score(
                 model_cfg,
                 reference_column_name=f"{self.golden_set_cfg.question_col}_embs",
                 column_name=f"{model_cfg.answer_col}_embs",
@@ -572,8 +586,6 @@ class RAGEvaluator:
                 column_name=model_cfg.answer_col,
             )
 
-        total_report = []
-        for model_cfg in self.golden_set_cfg.models_cfg:
             report = RAGEReport(
                 report_name=model_cfg.answer_col,
                 similarity_score=similarity_score,
@@ -611,7 +623,7 @@ class RAGEvaluator:
         sim_model_name: str = "intfloat/multilingual-e5-large",
         print_report: bool = False,
         pointwise_report: bool = False,
-    ) -> Dict[str, List[RAGEReport]]:
+    ) -> Dict[str, Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]]:
         """Evaluate models on the correctness (A~A*), faithfulness (A~C) and relevance (A~Q) tasks.
         Correctness:  NLI, similarity, uni-/bi-gram overlap (P/R/F1), ROUGE-L (P/R/F1) and BLEU scores.
         Faithfulness: NLI, unigram overlap (P/R/F1) and ROUGE-L (reversed P) scores.
@@ -623,10 +635,12 @@ class RAGEvaluator:
             sim_model_name (str, optional): HF model name to use for the Similarity score.
             Defaults to "intfloat/multilingual-e5-large".
             print_report (bool, optional):  Whether to print the output to the console.
-            Defaults to True.
+            Defaults to False.
+            pointwise_report (bool, optional): Whether to return pointwise report.
 
         Returns:
-            Dict[str, List[RAGEReport]]: Dict of the reports for the each task and model.
+            Dict[str, Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]]: Dict of the reports for the
+            each task and model.
         """
         if pointwise_report:
             correctness_report, correctness_pointwise = self.evaluate_correctness(

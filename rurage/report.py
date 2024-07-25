@@ -58,7 +58,7 @@ def correctness_report(report: RAGEReport) -> None:
     print("\n\n")
 
 
-def faithfulness_report(self, report: RAGEReport) -> None:
+def faithfulness_report(report: RAGEReport) -> None:
     """Prints model evaluation report on faithfulness task.
     It contains NLI, unigram overlap (P/R/F1) and ROUGE-L (reversed P) scores.
 
@@ -80,7 +80,7 @@ def faithfulness_report(self, report: RAGEReport) -> None:
     print("\n\n")
 
 
-def relevance_report(self, report: RAGEReport) -> None:
+def relevance_report(report: RAGEReport) -> None:
     """Prints model evaluation report on relevance task.
     It contains similarity, unigram overlap (P) and ROUGE-L (R) scores.
 
