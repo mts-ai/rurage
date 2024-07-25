@@ -2,6 +2,21 @@
 
 RuRAGE (Russian RAG Evaluation) is a Python library developed to speed-up evaluation russian RAG systems with Correctness, Faithfulness and Relevance axes using a variety of deterministic and model-based metrics.
 
+Keypoints:
+
+- If there are many weak metrics, you can combine them into an ensemble
+- We train ensemble on the necessary nature of the data, carefully without the data leaks of validation
+- It is necessary to prepare a Golden-set with standard answers. It is needed for both Judge LLM and RuRAGE
+- The resulting usefulness of deterministic metrics almost doubles
+
+Metrics by Mistral 7B top-10 of both approaches evaluated on the Golden set and compared using the best thresholds in classification with usefulness labels by human evaluation. Each metric has its own marker, with classes grouped by color. The strongest metrics are located at the top right according to the axes Recall and Precision.
+![Alt text](/docs/image_classification.png)
+
+Metrics of both approaches evaluated on the golden set and compared using Pearson’s correlation with human evaluation (Usefulness) labels. Top-5 and top-10 indicate the number of search engine snippets passed to the model as context. Variations with different refuse rates (No info) from Mistral 7B are included.
+![Alt text](/docs/image_bars.png)
+
+Unfortunately, ensemble creation hasn't been added yet, but you can independently experiment with different boostings on decision trees yourself.
+
 ## Features
 
 - **Deterministic Metrics**:
@@ -68,11 +83,12 @@ print(tokens)
 ### By the End of Q3
 
 - **Automatic Ensemble Creation**: Implement functionality for automatic creation of evaluation ensembles.
+- **Auto-adaptive thresholds**: Implement functionality for automatic creation thresholds for features in ensemble.
 - **Multiclass Labels**: Extend support to work with multiclass usefulness labels.
-- **Uncertainty scores**: Uncertainty scores to ensemble.
 
 ### By the End of the Year
 
+- **Uncertainty scores**: Uncertainty scores to ensemble.
 - **Judge LLM**: Introduce our proprietary Judge LLM model for enhanced evaluation.
 
 ## Contributing
