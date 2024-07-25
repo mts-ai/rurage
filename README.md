@@ -1,6 +1,6 @@
 # RuRAGE - Russian RAG Evaluation
 
-RuRAGE (Russian RAG Evaluation) is a Python library designed to evaluate Russian Relevance, Accuracy, and Generative tasks using a variety of deterministic and model-based metrics. This library facilitates comprehensive assessment across multiple axes: Correctness, Faithfulness, and Relevance.
+RuRAGE (Russian RAG Evaluation) is a Python library developed to speed-up evaluation russian RAG systems with Correctness, Faithfulness and Relevance axes using a variety of deterministic and model-based metrics.
 
 ## Features
 
@@ -32,12 +32,11 @@ pip install rurage
 
 ## Usage
 
-Here's a basic example of how to use RuRAGE:
+Basic example of how to use RuRAGE:
 
 ```python
 from rurage import Tokenizer, RAGEModelConfig, RAGESetConfig, RAGEReport
 
-# Initialize tokenizer
 tokenizer = Tokenizer(
     lower_case=True,
     remove_punctuation=True,
@@ -48,13 +47,10 @@ tokenizer = Tokenizer(
     ngram_range=(1, 1)
 )
 
-# Tokenize text
 tokens = tokenizer("Ваш текст для токенизации здесь")
 
-# Define RAGE model configuration
 model_config = RAGEModelConfig(context_col="context", answer_col="answer")
 
-# Create RAGE set configuration
 rage_set_config = RAGESetConfig(
     golden_set=your_dataframe,
     question_col="question",
@@ -62,7 +58,6 @@ rage_set_config = RAGESetConfig(
     models_cfg=[model_config]
 )
 
-# Generate report
 report = RAGEReport(report_name="Evaluation Report")
 
 print(tokens)
@@ -97,6 +92,3 @@ For any questions, issues, or suggestions, please open an issue on our [GitHub r
 RuRAGE presented in PyCon 2024 by MTS AI Search Group.
 
 Developed by MTS AI Search Group (Krayko Nikita, Laputin Fedor, Sidorov Ivan)
----
-
-With RuRAGE, evaluating Russian language tasks has never been more comprehensive and accessible. We look forward to your feedback and contributions to make this library even better!
