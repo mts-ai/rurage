@@ -6,8 +6,8 @@ setup(
     description="A library to provide RAG model evaluation reports",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    author="Krayko Nikita MTS AI",
-    author_email="n.kraiko@mts.ai",
+    author="Sidorov Ivan MTS AI, Kraiko Nikita MTS AI",
+    author_email="i.sidorov1@mts.ai, n.kraiko@mts.ai",
     url="https://github.com/mts-ai/rurage",
     packages=find_packages(),
     install_requires=[
