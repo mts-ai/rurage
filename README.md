@@ -50,32 +50,53 @@ pip install rurage
 Basic example of how to use RuRAGE:
 
 ```python
-from rurage import Tokenizer, RAGEModelConfig, RAGESetConfig, RAGEReport
+import pandas as pd
 
-tokenizer = Tokenizer(
-    lower_case=True,
-    remove_punctuation=True,
-    remove_stopwords=True,
-    lemm=True,
-    stem=False,
-    language="russian",
-    ngram_range=(1, 1)
+from rurage import RAGEModelConfig, RAGESetConfig, RAGEvaluator
+
+# For each model that needs to be evaluated, you need to initialize a config containing:
+# * the name of the column with the context on which the answer was generated
+# * the name of the column with the generated model answer
+models_cfg = []
+models_cfg.append(
+    RAGEModelConfig(context_col="example_context_top5", answer_col="model_1_answer")
+)
+models_cfg.append(
+    RAGEModelConfig(context_col="example_context_top5", answer_col="model_2_answer")
 )
 
-tokens = tokenizer("Ваш текст для токенизации здесь")
-
-model_config = RAGEModelConfig(context_col="context", answer_col="answer")
-
-rage_set_config = RAGESetConfig(
-    golden_set=your_dataframe,
+# Initialize the configuration of the evaluation set:
+# * validation set pd.Daraframe
+# * The name of the question column
+# * The name of the golden answer column
+# * The list of model configs
+validation_set = pd.read_csv("example_set.csv")
+validation_set_cfg = RAGESetConfig(
+    golden_set=validation_set,
     question_col="question",
     golden_answer_col="golden_answer",
-    models_cfg=[model_config]
+    models_cfg=models_cfg,
 )
 
-report = RAGEReport(report_name="Evaluation Report")
+# Initialize the evaluator
+rager = RAGEvaluator(golden_set_cfg=validation_set_cfg)
 
-print(tokens)
+# Run a comprehensive evalution (Correctness, Faithfulness, Relevance) for each model
+correctness_report, faithfulness_report, relevance_report = (
+    rager.comprehensive_evaluation()
+)
+
+# Or you can run a separate evaluation
+correctness_report = rager.evaluate_correctness()
+faithfulness_report = rager.evaluate_faithfulness()
+relevance_report = rager.evaluate_relevance()
+
+# For each evaluation method, it is possible to print a report, as well as receive a pointwise report:
+# print_report : bool, optional
+# Whether to print the output to the console. Defaults to False.
+
+# pointwise_report : bool, optional
+# Whether to return pointwise report. Defaults to False.
 ```
 
 ## To-Do List

@@ -320,18 +320,14 @@ class RAGEvaluator:
         print_report: bool = False,
         pointwise_report: bool = False,
     ) -> Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]:
-        """Evaluate models on the correctness task (A~A*).
+        """Evaluate models on the correctness task (A\~A*).
         It estimates NLI, similarity, uni-/bi-gram overlap (P/R/F1), ROUGE-L (P/R/F1) and BLEU scores.
 
         Args:
-            nli_model_name (str, optional): HF model name to use for the NLI score.
-            Defaults to "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7".
-            sim_model_name (str, optional): HF model name to use for the Similarity score.
-            Defaults to "intfloat/multilingual-e5-large".
-            print_report (bool, optional): Whether to print the output to the console.
-            Defaults to False.
-            pointwise_report (bool, optional): Whether to return pointwise report.
-            Defaults to False.
+            nli_model_name (str, optional): HF model name to use for the NLI score. Defaults to "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7".
+            sim_model_name (str, optional): HF model name to use for the Similarity score. Defaults to "intfloat/multilingual-e5-large".
+            print_report (bool, optional): Whether to print the output to the console. Defaults to False.
+            pointwise_report (bool, optional): Whether to return pointwise report. Defaults to False.
 
         Returns:
             Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]: A list of the reports for the
@@ -457,15 +453,13 @@ class RAGEvaluator:
         print_report: bool = False,
         pointwise_report: bool = False,
     ) -> Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]:
-        """Evaluate models on the faithfulness task (A~C).
+        """Evaluate models on the faithfulness task (A\~C).
         It estimates NLI, unigram overlap (P/R/F1) and ROUGE-L (reversed P) scores.
 
         Args:
-            nli_model_name (str, optional): HF model name to use for the NLI score.
-            Defaults to "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7".
-            print_report (bool, optional):  Whether to print the output to the console.
-            Defaults to False.
-            pointwise_report (bool, optional): Whether to return pointwise report.
+            nli_model_name (str, optional): HF model name to use for the NLI score. Defaults to "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7".
+            print_report (bool, optional):  Whether to print the output to the console. Defaults to False.
+            pointwise_report (bool, optional): Whether to return pointwise report. Defaults to False.
 
         Returns:
             Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]: A list of the reports for the
@@ -536,15 +530,13 @@ class RAGEvaluator:
         print_report: bool = False,
         pointwise_report: bool = False,
     ) -> Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]:
-        """Evaluate models on the relevance task (A~Q).
+        """Evaluate models on the relevance task (A\~Q).
         It estimates similarity, unigram overlap (P) and ROUGE-L (R) scores.
 
         Args:
-            sim_model_name (str, optional): HF model name to use for the Similarity score.
-            Defaults to "intfloat/multilingual-e5-large".
-            print_report (bool, optional):  Whether to print the output to the console.
-            Defaults to False.
-            pointwise_report (bool, optional): Whether to return pointwise report.
+            sim_model_name (str, optional): HF model name to use for the Similarity score. Defaults to "intfloat/multilingual-e5-large".
+            print_report (bool, optional):  Whether to print the output to the console. Defaults to False.
+            pointwise_report (bool, optional): Whether to return pointwise report. Defaults to False.
 
         Returns:
             Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]: A list of the reports for the
@@ -624,19 +616,16 @@ class RAGEvaluator:
         print_report: bool = False,
         pointwise_report: bool = False,
     ) -> Dict[str, Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]]:
-        """Evaluate models on the correctness (A~A*), faithfulness (A~C) and relevance (A~Q) tasks.
+        """Evaluate models on the correctness (A\~A*), faithfulness (A\~C) and relevance (A\~Q) tasks.
         Correctness:  NLI, similarity, uni-/bi-gram overlap (P/R/F1), ROUGE-L (P/R/F1) and BLEU scores.
         Faithfulness: NLI, unigram overlap (P/R/F1) and ROUGE-L (reversed P) scores.
         Relevance: similarity, unigram overlap (P) and ROUGE-L (P) scores.
 
         Args:
-            nli_model_name (str, optional): HF model name to use for the NLI score.
-            Defaults to "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7".
-            sim_model_name (str, optional): HF model name to use for the Similarity score.
-            Defaults to "intfloat/multilingual-e5-large".
-            print_report (bool, optional):  Whether to print the output to the console.
-            Defaults to False.
-            pointwise_report (bool, optional): Whether to return pointwise report.
+            nli_model_name (str, optional): HF model name to use for the NLI score. Defaults to "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7".
+            sim_model_name (str, optional): HF model name to use for the Similarity score. Defaults to "intfloat/multilingual-e5-large".
+            print_report (bool, optional):  Whether to print the output to the console. Defaults to False.
+            pointwise_report (bool, optional): Whether to return pointwise report. Defaults to False.
 
         Returns:
             Dict[str, Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]]: Dict of the reports for the
