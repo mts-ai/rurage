@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="RuRAGE",
-    version="1.0.1",
+    version="1.0.2",
     description="RuRAGE (Russian RAG Evaluation) is a Python library developed to speed-up evaluation russian RAG systems with Correctness, Faithfulness and Relevance axes using a variety of deterministic and model-based metrics.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
