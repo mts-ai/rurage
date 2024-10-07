@@ -16,7 +16,10 @@ def compute_nli_score(
     counts = labels.value_counts()
     for id, label in class_labels.items():
         if label == mtype:
-            return counts[int(id)] / norm_size
+            try:
+                return counts[int(id)] / norm_size
+            except KeyError:
+                return 0.0
 
 
 def compute_similarity(embedding_first, embedding_second) -> float:
@@ -30,8 +33,16 @@ def compute_overlap(reference_sentence, sentence, tokenizer: Tokenizer) -> Tuple
     intersection = len(set_first.intersection(set_second))
     union = len(set_first.union(set_second))
 
-    precision = intersection / len(set_first)
-    recall = intersection / union
+    try:
+        precision = intersection / len(set_first)
+    except ZeroDivisionError:
+        precision = 0
+
+    try:
+        recall = intersection / union
+    except ZeroDivisionError:
+        recall = 0
+
     try:
         f1 = 2 * precision * recall / (precision + recall)
     except ZeroDivisionError:
