@@ -46,7 +46,7 @@ pip install rurage
 ```
 
 ## Basic Usage
-*See detailed example usage [here](https://github.com/mts-ai/rurage/tree/main/examples/example_rurage_evaluation.ipynb)*
+*See detailed example usage [here](https://github.com/mts-ai/rurage/tree/main/examples/example_rurage_evaluation.ipynb)*  
 *If you are looking for RuRAGE ensemble train/inference, [click here](https://github.com/mts-ai/rurage/tree/main/examples/example_rurage_ensemble.ipynb)*
 
 Example of how to use RuRAGE evaluation:
