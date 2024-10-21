@@ -24,7 +24,7 @@ class RAGEnsemble:
                     f"Failed to load model from {model_path}. Check the path or model format."
                 )
         else:
-            self.model = CatBoostClassifier()
+            self.model = CatBoostClassifier(allow_writing_files=False)
         self._threshold = None
         self._class_labels = None
         self._features_dict = ensemble_features
