@@ -30,5 +30,9 @@ dependencies = [
     "catboost",
 ]
 
+[tool.setuptools.packages.find]
+include = ["rurage*"]
+exclude = ["docs*", "tests*", "examples*"]
+
 [project.urls]
 Homepage = "https://github.com/mts-ai/rurage"
