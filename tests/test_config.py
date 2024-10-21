@@ -1,6 +1,9 @@
 import unittest
+
 import pandas as pd
+
 from rurage.config import RAGEModelConfig, RAGESetConfig
+
 
 class TestConfig(unittest.TestCase):
     def test_ragemodelconfig(self):
@@ -12,6 +15,7 @@ class TestConfig(unittest.TestCase):
         model_config = RAGEModelConfig(context_col="context", answer_col="answer")
         set_config = RAGESetConfig(df, "question", "answer", [model_config])
         self.assertEqual(set_config.question_col, "question")
+
 
 if __name__ == "__main__":
     unittest.main()

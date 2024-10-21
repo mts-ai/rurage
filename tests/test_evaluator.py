@@ -1,7 +1,10 @@
 import unittest
+
 import pandas as pd
+
 from rurage.config import RAGEModelConfig, RAGESetConfig
 from rurage.evaluator import RAGEvaluator
+
 
 class TestEvaluator(unittest.TestCase):
     def setUp(self):
@@ -21,6 +24,7 @@ class TestEvaluator(unittest.TestCase):
     def test_evaluate_relevance(self):
         report = self.evaluator.evaluate_relevance()
         self.assertIsNotNone(report)
+
 
 if __name__ == "__main__":
     unittest.main()

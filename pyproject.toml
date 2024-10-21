@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "RuRAGE"
+version = "1.1.0"
+authors = [
+    { name = "Sidorov Ivan MTS AI", email = "i.sidorov1@mts.ai" },
+    { name = "Krayko Nikita MTS AI", email = "n.kraiko@mts.ai" },
+]
+description = "RuRAGE (Russian RAG Evaluation) is a Python library developed to speed-up evaluation russian RAG systems with Correctness, Faithfulness and Relevance axes using a variety of deterministic and model-based metrics."
+readme = "README.md"
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pandas",
+    "numpy",
+    "scikit-learn",
+    "nltk",
+    "pymorphy2",
+    "rouge_score",
+    "transformers",
+    "torch",
+    "tqdm",
+    "catboost",
+]
+
+[project.urls]
+Homepage = "https://github.com/mts-ai/rurage"

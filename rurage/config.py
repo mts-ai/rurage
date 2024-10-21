@@ -22,4 +22,34 @@ class RAGESetConfig:
     models_cfg: List[RAGEModelConfig]
 
     def __post_init__(self):
-        object.__setattr__(self, "golden_set", self.golden_set.copy())
+        object.__setattr__(
+            self, "golden_set", self.golden_set.copy().reset_index(drop=True)
+        )
+
+
+ensemble_features = {
+    "correctness": [
+        "nli",
+        "sim",
+        "unigram_overlap_precision",
+        "unigram_overlap_recall",
+        "unigram_overlap_f1",
+        "bigram_overlap_precision",
+        "bigram_overlap_recall",
+        "bigram_overlap_f1",
+        "rouge_precision",
+        "rouge_recall",
+        "rouge_f1",
+        "bleu",
+    ],
+    "faithfulness": [
+        "nli",
+        "unigram_overlap_precision",
+        "rouge_precision",
+    ],
+    "relevance": [
+        "sim",
+        "unigram_overlap_precision",
+        "rouge_precision",
+    ],
+}

@@ -3,6 +3,7 @@
 *.s3cfg
 *.s3cfg-mtsai
 *.s3cfg-va
+*.cbm
 # compliled / optimized / DLL files
 __pycache__/
 **/__pycache__/
@@ -100,7 +101,6 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-QuerySoftMax/
 
 # Spyder project settings
 .spyderproject

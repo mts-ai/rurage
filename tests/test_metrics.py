@@ -1,11 +1,13 @@
 import unittest
+
 from rurage.metrics import (
-    compute_nli_score,
-    compute_similarity,
-    compute_overlap,
+    calculate_bleu,
     calculate_rouge,
-    calculate_bleu
+    compute_nli_score,
+    compute_overlap,
+    compute_similarity,
 )
+
 
 class TestMetrics(unittest.TestCase):
     def test_compute_nli_score(self):
@@ -27,6 +29,7 @@ class TestMetrics(unittest.TestCase):
     def test_calculate_bleu(self):
         # Add mock test for BLEU calculation
         self.assertIsNotNone(calculate_bleu("reference", "candidate"))
+
 
 if __name__ == "__main__":
     unittest.main()

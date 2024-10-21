@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -147,13 +147,17 @@ class RAGEvaluator:
         self,
         sentences: np.ndarray,
         batch_size: int = 16,
-        prefix: Literal["query", "passage"] = "query",
+        prefix: Optional[str] = "query",
     ) -> np.ndarray:
-        sentences = prefix + ":" + sentences
-        batches = np.array_split(
-            sentences,
-            np.floor(len(sentences) / batch_size),
-        )
+        if prefix:
+            sentences = prefix + ":" + sentences
+        if len(sentences) > batch_size:
+            batches = np.array_split(
+                sentences,
+                np.floor(len(sentences) / batch_size),
+            )
+        else:
+            batches = [sentences]
         sentence_embeddings = []
         for sentences_batch in batches:
             sentences_batch = list(sentences_batch)
@@ -267,24 +271,35 @@ class RAGEvaluator:
         reference_column_name: str,
         column_name: str,
     ) -> Tuple[float]:
-        self.golden_set_cfg.golden_set[f"{model_cfg.answer_col}_rouge"] = (
-            self.golden_set_cfg.golden_set.apply(
-                lambda row: self._calculate_rouge(
+        rouge_scores = self.golden_set_cfg.golden_set.apply(
+            lambda row: pd.Series(
+                self._calculate_rouge(
                     row,
                     reference_column_name=reference_column_name,
                     column_name=column_name,
-                ),
-                axis=1,
-            )
+                )
+            ),
+            axis=1,
         )
-        rouge_metrics = self.golden_set_cfg.golden_set[
-            f"{model_cfg.answer_col}_rouge"
-        ].apply(pd.Series)
-        return (
-            rouge_metrics[0].median(),
-            rouge_metrics[1].median(),
-            rouge_metrics[2].median(),
-        )
+        rouge_template = f"{model_cfg.answer_col}_rouge"
+        self.golden_set_cfg.golden_set[
+            [
+                f"{rouge_template}_precision",
+                f"{rouge_template}_recall",
+                f"{rouge_template}_f1",
+            ]
+        ] = rouge_scores
+
+        rouge_precision_median = self.golden_set_cfg.golden_set[
+            f"{rouge_template}_precision"
+        ].median()
+        rouge_recall_median = self.golden_set_cfg.golden_set[
+            f"{rouge_template}_recall"
+        ].median()
+        rouge_f1_median = self.golden_set_cfg.golden_set[
+            f"{rouge_template}_f1"
+        ].median()
+        return rouge_precision_median, rouge_recall_median, rouge_f1_median
 
     def _calculate_bleu(
         self, row: pd.Series, reference_column_name: str, column_name: str
@@ -324,8 +339,10 @@ class RAGEvaluator:
         It estimates NLI, similarity, uni-/bi-gram overlap (P/R/F1), ROUGE-L (P/R/F1) and BLEU scores.
 
         Args:
-            nli_model_name (str, optional): HF model name to use for the NLI score. Defaults to "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7".
-            sim_model_name (str, optional): HF model name to use for the Similarity score. Defaults to "intfloat/multilingual-e5-large".
+            nli_model_name (str, optional): HF model name to use for the NLI score.
+            Defaults to "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7".
+            sim_model_name (str, optional): HF model name to use for the Similarity score.
+            Defaults to "intfloat/multilingual-e5-large".
             print_report (bool, optional): Whether to print the output to the console. Defaults to False.
             pointwise_report (bool, optional): Whether to return pointwise report. Defaults to False.
 
@@ -438,7 +455,9 @@ class RAGEvaluator:
                 )
                 metric_columns.append(f"{model_cfg.answer_col}_bigram_overlap_recall")
                 metric_columns.append(f"{model_cfg.answer_col}_bigram_overlap_f1")
-                metric_columns.append(f"{model_cfg.answer_col}_rouge")
+                metric_columns.append(f"{model_cfg.answer_col}_rouge_precision")
+                metric_columns.append(f"{model_cfg.answer_col}_rouge_recall")
+                metric_columns.append(f"{model_cfg.answer_col}_rouge_f1")
                 metric_columns.append(f"{model_cfg.answer_col}_bleu")
 
                 pointwise_reports.append(self.golden_set_cfg.golden_set[metric_columns])
@@ -457,7 +476,8 @@ class RAGEvaluator:
         It estimates NLI, unigram overlap (P/R/F1) and ROUGE-L (reversed P) scores.
 
         Args:
-            nli_model_name (str, optional): HF model name to use for the NLI score. Defaults to "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7".
+            nli_model_name (str, optional): HF model name to use for the NLI score.
+            Defaults to "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7".
             print_report (bool, optional):  Whether to print the output to the console. Defaults to False.
             pointwise_report (bool, optional): Whether to return pointwise report. Defaults to False.
 
@@ -516,7 +536,7 @@ class RAGEvaluator:
                 metric_columns.append(
                     f"{model_cfg.answer_col}_unigram_overlap_precision"
                 )
-                metric_columns.append(f"{model_cfg.answer_col}_rouge")
+                metric_columns.append(f"{model_cfg.answer_col}_rouge_precision")
 
                 pointwise_reports.append(self.golden_set_cfg.golden_set[metric_columns])
 
@@ -534,7 +554,8 @@ class RAGEvaluator:
         It estimates similarity, unigram overlap (P) and ROUGE-L (R) scores.
 
         Args:
-            sim_model_name (str, optional): HF model name to use for the Similarity score. Defaults to "intfloat/multilingual-e5-large".
+            sim_model_name (str, optional): HF model name to use for the Similarity score.
+            Defaults to "intfloat/multilingual-e5-large".
             print_report (bool, optional):  Whether to print the output to the console. Defaults to False.
             pointwise_report (bool, optional): Whether to return pointwise report. Defaults to False.
 
@@ -601,7 +622,7 @@ class RAGEvaluator:
                 metric_columns.append(
                     f"{model_cfg.answer_col}_unigram_overlap_precision"
                 )
-                metric_columns.append(f"{model_cfg.answer_col}_rouge")
+                metric_columns.append(f"{model_cfg.answer_col}_rouge_recall")
 
                 pointwise_reports.append(self.golden_set_cfg.golden_set[metric_columns])
 
@@ -622,8 +643,10 @@ class RAGEvaluator:
         Relevance: similarity, unigram overlap (P) and ROUGE-L (P) scores.
 
         Args:
-            nli_model_name (str, optional): HF model name to use for the NLI score. Defaults to "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7".
-            sim_model_name (str, optional): HF model name to use for the Similarity score. Defaults to "intfloat/multilingual-e5-large".
+            nli_model_name (str, optional): HF model name to use for the NLI score.
+            Defaults to "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7".
+            sim_model_name (str, optional): HF model name to use for the Similarity score.
+            Defaults to "intfloat/multilingual-e5-large".
             print_report (bool, optional):  Whether to print the output to the console. Defaults to False.
             pointwise_report (bool, optional): Whether to return pointwise report. Defaults to False.
 

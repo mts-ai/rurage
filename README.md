@@ -45,9 +45,11 @@ You can install RuRAGE from PyPI:
 pip install rurage
 ```
 
-## Usage
+## Basic Usage
+*See detailed example usage [here](https://github.com/mts-ai/rurage/tree/main/examples/example_rurage_evaluation.ipynb)*  
+*If you are looking for RuRAGE ensemble train/inference, [click here](https://github.com/mts-ai/rurage/tree/main/examples/example_rurage_ensemble.ipynb)*
 
-Basic example of how to use RuRAGE:
+Example of how to use RuRAGE evaluation:
 
 ```python
 import pandas as pd
@@ -66,10 +68,10 @@ models_cfg.append(
 )
 
 # Initialize the configuration of the evaluation set:
-# * validation set pd.Daraframe
-# * The name of the question column
-# * The name of the golden answer column
-# * The list of model configs
+# * Validation set pd.Dataframe
+# * Name of the question column
+# * Name of the golden answer column
+# * List of model configs
 validation_set = pd.read_csv("example_set.csv")
 validation_set_cfg = RAGESetConfig(
     golden_set=validation_set,
@@ -103,9 +105,9 @@ relevance_report = rager.evaluate_relevance()
 
 ### By the End of Q3
 
-- **Automatic Ensemble Creation**: Implement functionality for automatic creation of evaluation ensembles.
-- **Auto-adaptive thresholds**: Implement functionality for automatic creation thresholds for features in ensemble.
-- **Multiclass Labels**: Extend support to work with multiclass usefulness labels.
+- [x] **Automatic Ensemble Creation**: Implement functionality for automatic creation of evaluation ensembles.
+- [x] **Auto-adaptive thresholds**: Implement functionality for automatic creation thresholds for features in ensemble.
+- [x] **Multiclass Labels**: Extend support to work with multiclass usefulness labels.
 
 ### By the End of the Year
 

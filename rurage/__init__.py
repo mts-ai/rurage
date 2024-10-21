@@ -1,4 +1,5 @@
-from .config import RAGEModelConfig, RAGESetConfig
+from .config import RAGEModelConfig, RAGESetConfig, ensemble_features
+from .ensemble import RAGEnsemble
 from .evaluator import RAGEvaluator
 from .metrics import (
     calculate_bleu,
@@ -16,9 +17,11 @@ from .report import (
 from .tokenizer import Tokenizer
 
 __all__ = [
+    "RAGEnsemble",
     "Tokenizer",
     "RAGEModelConfig",
     "RAGESetConfig",
+    "ensemble_features",
     "RAGEReport",
     "RAGEvaluator",
     "correctness_report",
