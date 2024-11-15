@@ -1,12 +1,12 @@
-# RuRAGE - Russian RAG Evaluation
+# RURAGE - Robust Universal RAG Evaluation
 
-RuRAGE (Russian RAG Evaluation) is a Python library developed to speed-up evaluation russian RAG systems with Correctness, Faithfulness and Relevance axes using a variety of deterministic and model-based metrics.
+RURAGE (Robust Universal RAG Evaluation) is a Python library developed to speed-up evaluation of RAG systems with Correctness, Faithfulness and Relevance axes using a variety of deterministic and model-based metrics.
 
 Keypoints:
 
 - If there are many weak metrics, you can combine them into an ensemble
 - We train ensemble on the necessary nature of the data, carefully without the data leaks of validation
-- It is necessary to prepare a Golden-set with standard answers. It is needed for both Judge LLM and RuRAGE
+- It is necessary to prepare a Golden-set with standard answers. It is needed for both Judge LLM and RURAGE
 - The resulting usefulness of deterministic metrics almost doubles
 
 Metrics by Mistral 7B top-10 of both approaches evaluated on the Golden set and compared using the best thresholds in classification with usefulness labels by human evaluation. Each metric has its own marker, with classes grouped by color. The strongest metrics are located at the top right according to the axes Recall and Precision.
@@ -39,17 +39,17 @@ Unfortunately, ensemble creation hasn't been added yet, but you can independentl
 
 ## Installation
 
-You can install RuRAGE from PyPI:
+You can install RURAGE from PyPI:
 
 ```bash
 pip install rurage
 ```
 
 ## Basic Usage
-*See detailed example usage [here](https://github.com/mts-ai/rurage/tree/main/examples/example_rurage_evaluation.ipynb)*  
-*If you are looking for RuRAGE ensemble train/inference, [click here](https://github.com/mts-ai/rurage/tree/main/examples/example_rurage_ensemble.ipynb)*
+*See detailed example usage [here](https://github.com/mts-ai/rurage/tree/main/examples/example_rurage_evaluation.ipynb)*
+*If you are looking for RURAGE ensemble train/inference, [click here](https://github.com/mts-ai/rurage/tree/main/examples/example_rurage_ensemble.ipynb)*
 
-Example of how to use RuRAGE evaluation:
+Example of how to use RURAGE evaluation:
 
 ```python
 import pandas as pd
@@ -120,7 +120,7 @@ We welcome contributions from the community. Please read our contributing guidel
 
 ## License
 
-RuRAGE is licensed under the MIT License. See the LICENSE file for more information.
+RURAGE is licensed under the MIT License. See the LICENSE file for more information.
 
 ## Contact
 
@@ -128,6 +128,6 @@ For any questions, issues, or suggestions, please open an issue on our [GitHub r
 
 ## Acknowledgments
 
-RuRAGE presented in PyCon 2024 by MTS AI Search Group.
+RURAGE presented in PyCon 2024 by MTS AI Search Group.
 
 Developed by MTS AI Search Group (Krayko Nikita, Laputin Fedor, Sidorov Ivan)

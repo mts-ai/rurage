@@ -68,10 +68,10 @@ class RAGEnsemble:
         set_config: RAGESetConfig,
         test_size: float = 0.2,
     ) -> Tuple[pd.DataFrame, pd.DataFrame, np.array, np.array]:
-        """Prepare RuRAGE pointwise reports for the ensemble model.
+        """Prepare RURAGE pointwise reports for the ensemble model.
 
         Args:
-            pointwise_reports (List[pd.DataFrame]): pointwise reports from RuRAGE.
+            pointwise_reports (List[pd.DataFrame]): pointwise reports from RURAGE.
             labels (List[np.array]): markup for the used dataset.
             set_config (RAGESetConfig): configuration data for the used dataset.
             test_size (float, optional): The size of the test set. Defaults to 0.2.
@@ -103,7 +103,7 @@ class RAGEnsemble:
         """Prepare data for the ensemble model inference.
 
         Args:
-            data (pd.DataFrame): RuRAGE pointwise report (one or more samples).
+            data (pd.DataFrame): RURAGE pointwise report (one or more samples).
             set_config (RAGESetConfig): configuration for the used data.
 
         Returns:
@@ -130,9 +130,9 @@ class RAGEnsemble:
         """Train the ensemble model on the training data.
 
         Args:
-            X_train (pd.DataFrame): A training set with the RuRAGE features.
+            X_train (pd.DataFrame): A training set with the RURAGE features.
             y_train (np.array): A vector with the target values for the train set.
-            X_test (pd.DataFrame, optional): A test set with the RuRAGE features. It uses for optimization.
+            X_test (pd.DataFrame, optional): A test set with the RURAGE features. It uses for optimization.
             Defaults to None.
             y_test (np.array, optional): A vector with the target values for the test set.
             It uses for optimization. Defaults to None.
@@ -209,7 +209,7 @@ class RAGEnsemble:
         """Predict the target values for the test set.
 
         Args:
-            X_test (pd.DataFrame): A test set with the RuRAGE features.
+            X_test (pd.DataFrame): A test set with the RURAGE features.
 
         Returns:
             np.array: A vector with the predicted target values.
