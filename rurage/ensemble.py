@@ -1,10 +1,10 @@
 import os
-from typing import List, Literal, Tuple
+from typing import List, Literal, Tuple, Union
 
 import numpy as np
 import pandas as pd
 from catboost import CatBoostClassifier, CatBoostError
-from sklearn.metrics import f1_score
+from sklearn.metrics import classification_report
 
 from .config import RAGESetConfig, ensemble_features
 
@@ -63,61 +63,53 @@ class RAGEnsemble:
 
     def prepare_data_for_study(
         self,
-        pointwise_reports: List[pd.DataFrame],
-        labels: List[np.array],
+        pointwise_reports: Union[List[pd.DataFrame], pd.DataFrame],
         set_config: RAGESetConfig,
-        test_size: float = 0.2,
-    ) -> Tuple[pd.DataFrame, pd.DataFrame, np.array, np.array]:
-        """Prepare RURAGE pointwise reports for the ensemble model.
+        labels: Union[List[np.array], None] = None,
+        test_size: float = 0.0,
+    ) -> Tuple:
+        """Prepare RURAGE pointwise reports for the ensemble model. You can prepare data
+        both for training and validation, as well as for inference.
 
         Args:
-            pointwise_reports (List[pd.DataFrame]): pointwise reports from RURAGE.
-            labels (List[np.array]): markup for the used dataset.
+            pointwise_reports (Union[List[pd.DataFrame], pd.DataFrame]): pointwise reports from RURAGE.
             set_config (RAGESetConfig): configuration data for the used dataset.
-            test_size (float, optional): The size of the test set. Defaults to 0.2.
+            labels (Union[List[np.array], None], optional): markup for the used dataset.  Defaults to None.
+            test_size (float, optional): The size of the test set. Defaults to 0.0.
 
         Returns:
-            Tuple[pd.DataFrame, pd.DataFrame, np.array, np.array]: X_train, y_train, X_test, y_test.
+            Tuple: X_train, y_train, X_test, y_test.
         """
         to_drop_columns = [set_config.question_col, set_config.golden_answer_col]
         for model_cfg in set_config.models_cfg:
             to_drop_columns.append(model_cfg.answer_col)
             to_drop_columns.append(model_cfg.context_col)
 
-        Xs, ys = [], []
-        for pointwise_report, label in zip(pointwise_reports, labels):
+        Xs = []
+        if isinstance(pointwise_reports, pd.DataFrame):
+            pointwise_report = [pointwise_reports]
+        for pointwise_report in pointwise_reports:
             pointwise_report = pointwise_report.drop(
                 to_drop_columns, axis=1, errors="ignore"
             )
             pointwise_report.columns = self._features
             Xs.append(pointwise_report)
-            ys.append(label)
 
-        X_train, X_test, y_train, y_test = self._split_data(Xs, ys, test_size=test_size)
+        if test_size > 0:
+            if not labels:
+                raise ValueError(
+                    "Provide the labels if you want to split data on train/val."
+                )
 
-        return X_train, y_train, X_test, y_test
+            X_train, X_test, y_train, y_test = self._split_data(
+                Xs, labels, test_size=test_size
+            )
+            return X_train, y_train, X_test, y_test
 
-    def prepare_data_for_inference(
-        self, data: pd.DataFrame, set_config: RAGESetConfig
-    ) -> pd.DataFrame:
-        """Prepare data for the ensemble model inference.
+        X = pd.concat(Xs)
+        labels = np.concatenate(labels)
 
-        Args:
-            data (pd.DataFrame): RURAGE pointwise report (one or more samples).
-            set_config (RAGESetConfig): configuration for the used data.
-
-        Returns:
-            pd.DataFrame: Prepared data for the ensemble model inference.
-        """
-        to_drop_columns = [set_config.question_col, set_config.golden_answer_col]
-        for model_cfg in set_config.models_cfg:
-            to_drop_columns.append(model_cfg.answer_col)
-            to_drop_columns.append(model_cfg.context_col)
-
-        X = data.drop(to_drop_columns, axis=1, errors="ignore")
-        X.columns = self._features
-
-        return X
+        return X, labels
 
     def fit(
         self,
@@ -139,16 +131,14 @@ class RAGEnsemble:
             optimize (bool, optional): Whether to optimize the threshold for the binary/multiclass
             classification task. Defaults to True.
         """
-        if set(X_train.columns) != set(self._features):
-            raise ValueError(
-                f"Dataset for the task '{self.ensemble_type}' must contain columns: '{self._features}'"
-            )
+        print("Used features:", end=" ")
+        print(*X_train.columns, sep=",")
         if (X_test is not None) and (y_test is not None):
-            eval_set = (X_test, y_test)
-            if set(X_test.columns) != set(self._features):
+            if X_train.columns != X_test.columns:
                 raise ValueError(
-                    f"Dataset for the task '{self.ensemble_type}' must contain columns: '{self._features}'"
+                    "The features in the train and validation sets do not match."
                 )
+            eval_set = (X_test, y_test)
         else:
             eval_set = None
 
@@ -174,7 +164,11 @@ class RAGEnsemble:
             f1_optim = 0.0
             for threshold in thresholds:
                 y_pred = (y_pred_proba >= threshold).astype(int)
-                f1 = f1_score(y_test, y_pred)
+                report = classification_report(y_test, y_pred, output_dict=True)
+                labels = list(report.keys())[:2]
+                f1_0 = report[labels[0]]["f1-score"]
+                f1_1 = report[labels[1]]["f1-score"]
+                f1 = 2 * f1_0 * f1_1 / (f1_0 + f1_1)
                 if f1 > f1_optim:
                     threshold_optim = threshold
                     f1_optim = f1
@@ -195,7 +189,11 @@ class RAGEnsemble:
                 f1_optim = 0.0
                 for threshold in thresholds:
                     y_pred = (y_pred_proba >= threshold).astype(int)
-                    f1 = f1_score(y_test_one_vs_all, y_pred)
+                    report = classification_report(y_test, y_pred, output_dict=True)
+                    labels = list(report.keys())[:2]
+                    f1_0 = report[labels[0]]["f1-score"]
+                    f1_1 = report[labels[1]]["f1-score"]
+                    f1 = 2 * f1_0 * f1_1 / (f1_0 + f1_1)
                     if f1 > f1_optim:
                         threshold_optim = threshold
                         f1_optim = f1
@@ -214,10 +212,6 @@ class RAGEnsemble:
         Returns:
             np.array: A vector with the predicted target values.
         """
-        if set(X_test.columns) != set(self._features):
-            raise ValueError(
-                f"Dataset for the task '{self.ensemble_type}' must contain columns: '{self._features}'"
-            )
         if self._threshold is not None:
             if len(self._class_labels) == 2:
                 y_pred_proba = self.model.predict_proba(X_test)[:, 1]

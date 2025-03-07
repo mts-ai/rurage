@@ -64,27 +64,27 @@ class RAGEvaluator:
         )
 
     def _init_nli_model(self, model_name: str) -> None:
-        if model_name != self.nli_model_name:
-            print(f"Initializing the NLI model: {model_name}")
-            self.nli_model_name = model_name
-            self._nli_tokenizer = AutoTokenizer.from_pretrained(self.nli_model_name)
-            self._nli_model = AutoModelForSequenceClassification.from_pretrained(
-                self.nli_model_name
-            ).to(self.device)
-            self._nli_labels = self._nli_model.config.id2label
-        else:
+        if model_name == self.nli_model_name:
             print("The NLI model has alredy been loaded.")
+            return
+
+        print(f"Initializing the NLI model: {model_name}")
+        self._nli_tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self._nli_model = AutoModelForSequenceClassification.from_pretrained(
+            model_name
+        ).to(self.device)
+        self._nli_labels = self._nli_model.config.id2label
+        self.nli_model_name = model_name
 
     def _init_sim_model(self, model_name: str) -> None:
-        if model_name != self.sim_model_name:
-            print(f"Initializing the similarity model: {model_name}")
-            self.sim_model_name = model_name
-            self._sim_tokenizer = AutoTokenizer.from_pretrained(self.sim_model_name)
-            self._sim_model = AutoModel.from_pretrained(self.sim_model_name).to(
-                self.device
-            )
-        else:
+        if model_name == self.sim_model_name:
             print("The similarity model has alredy been loaded.")
+            return
+
+        print(f"Initializing the similarity model: {model_name}")
+        self._sim_tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self._sim_model = AutoModel.from_pretrained(model_name).to(self.device)
+        self.sim_model_name = model_name
 
     def _predict_relation(
         self, row: pd.Series, premise_column_name: str, hypothesis_column_name: str
@@ -333,7 +333,7 @@ class RAGEvaluator:
         nli_model_name: str = "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7",
         sim_model_name: str = "intfloat/multilingual-e5-large",
         print_report: bool = False,
-        pointwise_report: bool = False,
+        pointwise_report: bool = True,
     ) -> Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]:
         """Evaluate models on the correctness task (A\~A*).
         It estimates NLI, similarity, uni-/bi-gram overlap (P/R/F1), ROUGE-L (P/R/F1) and BLEU scores.
@@ -344,7 +344,7 @@ class RAGEvaluator:
             sim_model_name (str, optional): HF model name to use for the Similarity score.
             Defaults to "intfloat/multilingual-e5-large".
             print_report (bool, optional): Whether to print the output to the console. Defaults to False.
-            pointwise_report (bool, optional): Whether to return pointwise report. Defaults to False.
+            pointwise_report (bool, optional): Whether to return pointwise report. Defaults to True.
 
         Returns:
             Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]: A list of the reports for the
@@ -434,43 +434,39 @@ class RAGEvaluator:
             if print_report:
                 correctness_report(report)
 
-        if pointwise_report:
-            pointwise_reports = []
-            for model_cfg in self.golden_set_cfg.models_cfg:
-                metric_columns = [
-                    self.golden_set_cfg.question_col,
-                    self.golden_set_cfg.golden_answer_col,
-                ]
-                metric_columns.append(model_cfg.context_col)
-                metric_columns.append(model_cfg.answer_col)
-                metric_columns.append(f"{model_cfg.answer_col}_nli")
-                metric_columns.append(f"{model_cfg.answer_col}_sim")
-                metric_columns.append(
-                    f"{model_cfg.answer_col}_unigram_overlap_precision"
-                )
-                metric_columns.append(f"{model_cfg.answer_col}_unigram_overlap_recall")
-                metric_columns.append(f"{model_cfg.answer_col}_unigram_overlap_f1")
-                metric_columns.append(
-                    f"{model_cfg.answer_col}_bigram_overlap_precision"
-                )
-                metric_columns.append(f"{model_cfg.answer_col}_bigram_overlap_recall")
-                metric_columns.append(f"{model_cfg.answer_col}_bigram_overlap_f1")
-                metric_columns.append(f"{model_cfg.answer_col}_rouge_precision")
-                metric_columns.append(f"{model_cfg.answer_col}_rouge_recall")
-                metric_columns.append(f"{model_cfg.answer_col}_rouge_f1")
-                metric_columns.append(f"{model_cfg.answer_col}_bleu")
+        if not pointwise_report:
+            return total_report
 
-                pointwise_reports.append(self.golden_set_cfg.golden_set[metric_columns])
+        pointwise_reports = []
+        for model_cfg in self.golden_set_cfg.models_cfg:
+            metric_columns = [
+                self.golden_set_cfg.question_col,
+                self.golden_set_cfg.golden_answer_col,
+            ]
+            metric_columns.append(model_cfg.context_col)
+            metric_columns.append(model_cfg.answer_col)
+            metric_columns.append(f"{model_cfg.answer_col}_nli")
+            metric_columns.append(f"{model_cfg.answer_col}_sim")
+            metric_columns.append(f"{model_cfg.answer_col}_unigram_overlap_precision")
+            metric_columns.append(f"{model_cfg.answer_col}_unigram_overlap_recall")
+            metric_columns.append(f"{model_cfg.answer_col}_unigram_overlap_f1")
+            metric_columns.append(f"{model_cfg.answer_col}_bigram_overlap_precision")
+            metric_columns.append(f"{model_cfg.answer_col}_bigram_overlap_recall")
+            metric_columns.append(f"{model_cfg.answer_col}_bigram_overlap_f1")
+            metric_columns.append(f"{model_cfg.answer_col}_rouge_precision")
+            metric_columns.append(f"{model_cfg.answer_col}_rouge_recall")
+            metric_columns.append(f"{model_cfg.answer_col}_rouge_f1")
+            metric_columns.append(f"{model_cfg.answer_col}_bleu")
 
-            return total_report, pointwise_reports
+            pointwise_reports.append(self.golden_set_cfg.golden_set[metric_columns])
 
-        return total_report
+        return total_report, pointwise_reports
 
     def evaluate_faithfulness(
         self,
         nli_model_name: str = "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7",
         print_report: bool = False,
-        pointwise_report: bool = False,
+        pointwise_report: bool = True,
     ) -> Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]:
         """Evaluate models on the faithfulness task (A\~C).
         It estimates NLI, unigram overlap (P/R/F1) and ROUGE-L (reversed P) scores.
@@ -479,7 +475,7 @@ class RAGEvaluator:
             nli_model_name (str, optional): HF model name to use for the NLI score.
             Defaults to "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7".
             print_report (bool, optional):  Whether to print the output to the console. Defaults to False.
-            pointwise_report (bool, optional): Whether to return pointwise report. Defaults to False.
+            pointwise_report (bool, optional): Whether to return pointwise report. Defaults to True.
 
         Returns:
             Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]: A list of the reports for the
@@ -523,32 +519,30 @@ class RAGEvaluator:
             if print_report:
                 faithfulness_report(report)
 
-        if pointwise_report:
-            pointwise_reports = []
-            for model_cfg in self.golden_set_cfg.models_cfg:
-                metric_columns = [
-                    self.golden_set_cfg.question_col,
-                    self.golden_set_cfg.golden_answer_col,
-                ]
-                metric_columns.append(model_cfg.context_col)
-                metric_columns.append(model_cfg.answer_col)
-                metric_columns.append(f"{model_cfg.answer_col}_nli")
-                metric_columns.append(
-                    f"{model_cfg.answer_col}_unigram_overlap_precision"
-                )
-                metric_columns.append(f"{model_cfg.answer_col}_rouge_precision")
+        if not pointwise_report:
+            return total_report
 
-                pointwise_reports.append(self.golden_set_cfg.golden_set[metric_columns])
+        pointwise_reports = []
+        for model_cfg in self.golden_set_cfg.models_cfg:
+            metric_columns = [
+                self.golden_set_cfg.question_col,
+                self.golden_set_cfg.golden_answer_col,
+            ]
+            metric_columns.append(model_cfg.context_col)
+            metric_columns.append(model_cfg.answer_col)
+            metric_columns.append(f"{model_cfg.answer_col}_nli")
+            metric_columns.append(f"{model_cfg.answer_col}_unigram_overlap_precision")
+            metric_columns.append(f"{model_cfg.answer_col}_rouge_precision")
 
-            return total_report, pointwise_reports
+            pointwise_reports.append(self.golden_set_cfg.golden_set[metric_columns])
 
-        return total_report
+        return total_report, pointwise_reports
 
     def evaluate_relevance(
         self,
         sim_model_name: str = "intfloat/multilingual-e5-large",
         print_report: bool = False,
-        pointwise_report: bool = False,
+        pointwise_report: bool = True,
     ) -> Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]:
         """Evaluate models on the relevance task (A\~Q).
         It estimates similarity, unigram overlap (P) and ROUGE-L (R) scores.
@@ -557,7 +551,7 @@ class RAGEvaluator:
             sim_model_name (str, optional): HF model name to use for the Similarity score.
             Defaults to "intfloat/multilingual-e5-large".
             print_report (bool, optional):  Whether to print the output to the console. Defaults to False.
-            pointwise_report (bool, optional): Whether to return pointwise report. Defaults to False.
+            pointwise_report (bool, optional): Whether to return pointwise report. Defaults to True.
 
         Returns:
             Tuple[List[RAGEReport], Optional[List[pd.DataFrame]]]: A list of the reports for the
@@ -609,26 +603,24 @@ class RAGEvaluator:
             if print_report:
                 relevance_report(report)
 
-        if pointwise_report:
-            pointwise_reports = []
-            for model_cfg in self.golden_set_cfg.models_cfg:
-                metric_columns = [
-                    self.golden_set_cfg.question_col,
-                    self.golden_set_cfg.golden_answer_col,
-                ]
-                metric_columns.append(model_cfg.context_col)
-                metric_columns.append(model_cfg.answer_col)
-                metric_columns.append(f"{model_cfg.answer_col}_sim")
-                metric_columns.append(
-                    f"{model_cfg.answer_col}_unigram_overlap_precision"
-                )
-                metric_columns.append(f"{model_cfg.answer_col}_rouge_recall")
+        if not pointwise_report:
+            return total_report
 
-                pointwise_reports.append(self.golden_set_cfg.golden_set[metric_columns])
+        pointwise_reports = []
+        for model_cfg in self.golden_set_cfg.models_cfg:
+            metric_columns = [
+                self.golden_set_cfg.question_col,
+                self.golden_set_cfg.golden_answer_col,
+            ]
+            metric_columns.append(model_cfg.context_col)
+            metric_columns.append(model_cfg.answer_col)
+            metric_columns.append(f"{model_cfg.answer_col}_sim")
+            metric_columns.append(f"{model_cfg.answer_col}_unigram_overlap_precision")
+            metric_columns.append(f"{model_cfg.answer_col}_rouge_recall")
 
-            return total_report, pointwise_reports
+            pointwise_reports.append(self.golden_set_cfg.golden_set[metric_columns])
 
-        return total_report
+        return total_report, pointwise_reports
 
     def comprehensive_evaluation(
         self,
