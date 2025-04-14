@@ -32,7 +32,12 @@ Unfortunately, ensemble creation hasn't been added yet, but you can independentl
 - **Model-based Metrics**:
   - NLI Scores using Transformer models
   - Cosine Similarity using Transformer models
-  - Uncertainty (soon)
+
+- **Uncertainty Metrics**:
+  - MeanTokenEntropy
+  - MeanTokenProbability
+  - MaxTokenProbability
+  - MaxSequenceProbability
 
 - **Ensemble Creation**:
   - Combine scores from multiple metrics to create a robust evaluation ensemble.
@@ -103,16 +108,11 @@ relevance_report = rager.evaluate_relevance()
 
 ## To-Do List
 
-### By the End of Q3
-
 - [x] **Automatic Ensemble Creation**: Implement functionality for automatic creation of evaluation ensembles.
 - [x] **Auto-adaptive thresholds**: Implement functionality for automatic creation thresholds for features in ensemble.
 - [x] **Multiclass Labels**: Extend support to work with multiclass usefulness labels.
-
-### By the End of the Year
-
-- **Uncertainty scores**: Uncertainty scores to ensemble.
-- **Judge LLM**: Introduce our proprietary Judge LLM model for enhanced evaluation.
+- [x] **Uncertainty scores**: Uncertainty scores to ensemble.
+- [ ] **Judge LLM**: Introduce our proprietary Judge LLM model for enhanced evaluation.
 
 ## Contributing
 
@@ -131,3 +131,35 @@ For any questions, issues, or suggestions, please open an issue on our [GitHub r
 RURAGE presented in PyCon 2024 by MTS AI Search Group.
 
 Developed by MTS AI Search Group (Krayko Nikita, Laputin Fedor, Sidorov Ivan)
+
+## Cite
+References to cite when you use RURAGE in a research paper:
+
+Krayko, N., Sidorov, I., Laputin, F., Panchenko, A., Galimzianova, D., Konovalov, V. (2025). RURAGE: Robust Universal RAG Evaluator for Fast and Affordable QA Performance Testing. In: Hauff, C., et al. Advances in Information Retrieval. ECIR 2025. Lecture Notes in Computer Science, vol 15576. Springer, Cham. https://doi.org/10.1007/978-3-031-88720-8_23
+
+```bibtex
+@InProceedings{10.1007/978-3-031-88720-8_23,
+author="Krayko, Nikita
+and Sidorov, Ivan
+and Laputin, Fedor
+and Panchenko, Alexander
+and Galimzianova, Daria
+and Konovalov, Vasily",
+editor="Hauff, Claudia
+and Macdonald, Craig
+and Jannach, Dietmar
+and Kazai, Gabriella
+and Nardini, Franco Maria
+and Pinelli, Fabio
+and Silvestri, Fabrizio
+and Tonellotto, Nicola",
+title="RURAGE: Robust Universal RAG Evaluator for Fast and Affordable QA Performance Testing",
+booktitle="Advances in Information Retrieval",
+year="2025",
+publisher="Springer Nature Switzerland",
+address="Cham",
+pages="135--145",
+abstract="The advent of Large Language Models (LLMs) has significantly propelled the popularity and demand for Question Answering (QA), particularly the Retrieval-Augmented Generation (RAG) approach for a plephora of business needs and applications, most notably for user support and assistance of various kinds. Such industrial NLP systems enable the scaling and optimization of business processes, driving efficiency and innovation. Given the pivotal roles of information retrieval and generation in RAG, the need for swift, continuous evaluation of system performance becomes crucial. We introduce the open-source RURAGE framework{\$}{\$}^{\{}1{\}}{\$}{\$}1, designed to assess the quality of QA responses through a combination of straightforward lexical analysis, model-based assessments, and uncertainty metrics. Our empirical findings demonstrate that RURAGE's ensemble of features achieves comparable outcomes to more resource-intensive evaluations utilizing LLM-as-a-judge, facilitating rapid development in industry settings (https://github.com/mts-ai/rurage).",
+isbn="978-3-031-88720-8"
+}
+```

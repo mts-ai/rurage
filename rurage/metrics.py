@@ -6,6 +6,8 @@ import rouge_score
 
 from .tokenizer import Tokenizer
 
+nltk.download("punkt_tab")
+
 
 def compute_nli_score(
     labels: pd.Series,
